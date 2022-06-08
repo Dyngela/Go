@@ -1,0 +1,2 @@
+curl -X POST http://broker:8080/
+curl -d '{"action":"auth","auth":{"email":"admin@example.com","password":"verysecret"}}' -H "Content-Type: application/json" -X POST http://broker:8080/handle

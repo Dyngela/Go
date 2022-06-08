@@ -1,0 +1,113 @@
+services:
+
+  broker:
+    build:
+      context: ./services/broker
+      dockerfile: ${DOCKERFILE_SERVICE}
+      args:
+        GO_MAIN: "./cmd/api"
+        BUILD_ARGS: ""
+      network: host
+    container_name: broker
+    restart: always
+    networks:
+      - micro-net
+      - db-net
+    depends_on:
+      - postgres
+
+  authentication:
+    build:
+      context: ./services/authentication
+      dockerfile: ${DOCKERFILE_SERVICE}
+      args:
+        GO_MAIN: "./cmd/api"
+        BUILD_ARGS: ""
+      network: host
+    container_name: auth
+    restart: always
+    environment:
+      DSN: "host=postgres port=${DB_PORT} user=${DB_USER} password=${DB_PASS} dbname=${DB_NAME} sslmode=disable timezone=UTC connect_timeout=5"
+    networks:
+      - micro-net
+      - db-net
+    depends_on:
+      - broker
+
+  front-end:
+    build:
+      context: ./services/front-end
+      dockerfile: ${DOCKERFILE_SERVICE}
+      args:
+        GO_MAIN: "./cmd/web"
+        BUILD_ARGS: ""
+      network: host
+    container_name: frontend
+    restart: always
+    ports:
+      - "${FRONT_PORT}:8080"
+    networks:
+      - micro-net
+    depends_on:
+      - broker
+
+  logger:
+    build:
+      context: ./services/logger
+      dockerfile: ${DOCKERFILE_SERVICE}
+      args:
+        GO_MAIN: "./cmd/api"
+        BUILD_ARGS: ""
+      network: host
+    container_name: logger
+    restart: always
+    networks:
+      - micro-net
+      - log-net
+    depends_on:
+      - broker
+      - mongo
+
+  postgres:
+    build:
+      context: ./db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - "auth:/var/lib/postgresql/data"
+    healthcheck:
+      test: /postgres.sh
+      interval: "5s"
+    ports:
+      - ${DB_HOST}:${DB_PORT}
+    networks:
+      - db-net
+
+  mongo:
+    image: 'mongo:4.2.16-bionic'
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    volumes:
+      - "log:/data/db"
+    networks:
+      - log-net
+
+volumes:
+  auth:
+  log:
+
+
+networks:
+  db-net:
+    name: db-net
+  micro-net:
+    name: micro-net
+  log-net:
+    name: log-net
