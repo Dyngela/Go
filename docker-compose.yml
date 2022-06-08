@@ -12,6 +12,15 @@ services:
       mode: replicated
       replicas: 1
 
+  logger-service:
+    build:
+      context: ./logger-service
+      dockerfile: ./logger-service.dockerfile
+    restart: always
+    deploy:
+      mode: replicated
+      replicas: 1
+
   authentication-service:
     build:
       context: ./authentication-service
@@ -27,6 +36,8 @@ services:
 
   postgres:
     image: 'postgres:14.2'
+    ports:
+      - "5432:5432"
     restart: always
     deploy:
       mode: replicated
@@ -37,11 +48,22 @@ services:
       POSTGRES_DB: users
     volumes:
       - "dbdata:/var/lib/postgresql/data/"
-      - "./dbinit:/docker-entrypoint-initdb.d"
+      - "./dbinit/auth:/docker-entrypoint-initdb.d"
       - "./healthchecks:/healthchecks"
     healthcheck:
       test: /healthchecks/postgres.sh
       interval: "5s"
-      
+
+  mongo:
+    image: 'mongo:4.2.16-bionic'
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: logs
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - "dbdata:/data/db"
+     # - "./dbinit:/docker-entrypoint-initdb.d"
 volumes:
   dbdata:
