@@ -1,10 +1,10 @@
 package main
 
 import (
-"encoding/json"
-"errors"
-"io"
-"net/http"
+	"encoding/json"
+	"errors"
+	"io"
+	"net/http"
 )
 
 type JSONResponse struct {

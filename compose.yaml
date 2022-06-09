@@ -5,7 +5,8 @@ services:
       context: ./services/broker
       dockerfile: ${DOCKERFILE_SERVICE}
       args:
-        GO_MAIN: "./cmd/api"
+        GO_MAIN: "/src/cmd/api"
+        # GO_MAIN: "./cmd/api"
         BUILD_ARGS: ""
       network: host
     container_name: broker
@@ -21,7 +22,8 @@ services:
       context: ./services/authentication
       dockerfile: ${DOCKERFILE_SERVICE}
       args:
-        GO_MAIN: "./cmd/api"
+        # GO_MAIN: "./cmd/api"
+        GO_MAIN: "/src/cmd/api"
         BUILD_ARGS: ""
       network: host
     container_name: auth
@@ -39,7 +41,8 @@ services:
       context: ./services/front-end
       dockerfile: ${DOCKERFILE_SERVICE}
       args:
-        GO_MAIN: "./cmd/web"
+        # GO_MAIN: "./cmd/web"
+        GO_MAIN: "/src/cmd/web"
         BUILD_ARGS: ""
       network: host
     container_name: frontend
@@ -56,7 +59,8 @@ services:
       context: ./services/logger
       dockerfile: ${DOCKERFILE_SERVICE}
       args:
-        GO_MAIN: "./cmd/api"
+        # GO_MAIN: "./cmd/api"
+        GO_MAIN: "/src/cmd/api"
         BUILD_ARGS: ""
       network: host
     container_name: logger
