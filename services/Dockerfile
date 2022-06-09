@@ -20,6 +20,8 @@ RUN CGO_ENABLED=0 go build -o entry ${BUILD_ARGS} ${GO_MAIN}
 
 
 FROM alpine:latest
+# go image distroless
+# grc.io/distroless/static
 COPY --from=build /src/entry /
 CMD [ "/entry" ]
 
