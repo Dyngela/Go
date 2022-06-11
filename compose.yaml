@@ -11,6 +11,8 @@ services:
       network: host
     container_name: broker
     restart: always
+    ports:
+      - "127.0.0.1:8080:8080"
     networks:
       - micro-net
       - db-net
@@ -22,7 +24,6 @@ services:
       context: ./services/authentication
       dockerfile: ${DOCKERFILE_SERVICE}
       args:
-        # GO_MAIN: "./cmd/api"
         GO_MAIN: "/src/cmd/api"
         BUILD_ARGS: ""
       network: host
@@ -41,12 +42,13 @@ services:
       context: ./services/front-end
       dockerfile: ${DOCKERFILE_SERVICE}
       args:
-        # GO_MAIN: "./cmd/web"
         GO_MAIN: "/src/cmd/web"
         BUILD_ARGS: ""
       network: host
     container_name: frontend
     restart: always
+    volumes:
+      - "./services/front-end/src/cmd/web/templates:/templates:ro"
     ports:
       - "${FRONT_PORT}:8080"
     networks:
@@ -59,7 +61,6 @@ services:
       context: ./services/logger
       dockerfile: ${DOCKERFILE_SERVICE}
       args:
-        # GO_MAIN: "./cmd/api"
         GO_MAIN: "/src/cmd/api"
         BUILD_ARGS: ""
       network: host

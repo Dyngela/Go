@@ -25,7 +25,7 @@ FROM alpine:latest
 ARG GO_MAIN
 ENV GO_MAIN=${GO_MAIN}
 COPY --from=build /src/entry /
-COPY --from=build /src/static /static
+# COPY --from=build /src/static /static
 CMD [ "/entry" ]
 
 

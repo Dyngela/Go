@@ -24,3 +24,11 @@ func main() {
 		return
 	}
 }
+
+// func logRequestHandler(h http.Handler) http.Handler {
+// 	fn := func(w http.ResponseWriter, r *http.Request) {
+// 		fmt.Println((*r).Header)
+// 		fmt.Println(w)
+// 	}
+// 	return http.HandlerFunc(fn)
+// }

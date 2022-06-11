@@ -39,6 +39,7 @@
         let sent = document.getElementById("payload");
         let received = document.getElementById("received");
 
+
         authBrokerBtn.addEventListener("click", function () {
             const payload = {
                 action: "auth",
@@ -47,39 +48,23 @@
                     password: "verysecret",
                 }
             }
-
-            // const headers = new Headers();
-            // headers.append("Content-Type", "application/json");
-            //
-            // const body = {
-            //     method: 'POST',
-            //     body: JSON.stringify(payload),
-            //     headers: headers,
-            // }
             const body = {
                 method: 'POST',
-                mode: 'cors',
-                cache: 'no-cache',
-                credentials: 'same-origin',
+                body: JSON.stringify(payload),
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Accept-Encoding': 'gzip, deflate',
-                    'Accept': '*/*',
-                },
-                redirect: 'follow',
-                referrerPolicy: 'no-referrer',
-                body: JSON.stringify(payload)
+                    "Content-Type": "application/json"
+                }
             }
 
-            fetch("http://broker:8080/handle", body)
+            body.body = JSON.stringify(payload);
+            fetch("http:\/\/localhost:8080\/handle", body)
                 .then((response) => response.json())
                 .then((data) => {
                     sent.innerHTML = JSON.stringify(payload, undefined, 4);
                     received.innerHTML = JSON.stringify(data, undefined, 4);
                     if (data.error) {
                         output.innerHTML +=  `<br><strong>Error:<strong> ${data.message}`
-                    }
-                    else {
+                    } else {
                         output.innerHTML += `<br> <strong> Response from broker service </strong>: ${data.message}`;
                     }
                 })
@@ -89,11 +74,15 @@
         })
 
         brokerBtn.addEventListener("click", function () {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 1000);
+
             const body = {
-                method: 'POST'
+                method: "POST"
             }
 
-            fetch("http://broker:8080/", body)
+            fetch("http:\/\/localhost:8080", body)
+//                .then((response) => console.log(response))
                 .then((response) => response.json())
                 .then((data) => {
                     sent.innerHTML = "Empty post request";
@@ -108,6 +97,7 @@
                 .catch((error) => {
                     output.innerHTML +=  "<br><br> Error: " + error;
                 })
+
         })
     </script>
 {{end}}
