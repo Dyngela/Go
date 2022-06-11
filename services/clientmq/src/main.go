@@ -6,7 +6,7 @@ import (
 	"log"
 	"math"
 	"os"
-	"rabbitMQ/src/events"
+	"clientmq/events"
 	"time"
 )
 

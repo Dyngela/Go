@@ -6,8 +6,6 @@ services:
       dockerfile: ${DOCKERFILE_SERVICE}
       args:
         GO_MAIN: "/src/cmd/api"
-        # GO_MAIN: "./cmd/api"
-        BUILD_ARGS: ""
       network: host
     container_name: broker
     restart: always
@@ -25,7 +23,6 @@ services:
       dockerfile: ${DOCKERFILE_SERVICE}
       args:
         GO_MAIN: "/src/cmd/api"
-        BUILD_ARGS: ""
       network: host
     container_name: auth
     restart: always
@@ -37,21 +34,22 @@ services:
     depends_on:
       - broker
 
-  rabbitMQ:
-    image: 'rabbitmq:3.9-alpine'
-    ports:
-      - "5672:5672"
+  clientmq:
     build:
-      context: ./services/rabbitMQ
+      context: ./services/clientmq
       dockerfile: ${DOCKERFILE_SERVICE}
       args:
         GO_MAIN: "/src"
-        BUILD_ARGS: ""
-    container_name: rabbitMQ
+      network: host
+    container_name: clientmq
     restart: always
-
-    volumes:
-      - "rabbitmq:/var/lib/rabbitmq/"
+    networks:
+      - micro-net
+      - db-net
+      - mq-net
+    depends_on:
+      - broker
+      - rabbitMQ
 
   front-end:
     build:
@@ -59,7 +57,6 @@ services:
       dockerfile: ${DOCKERFILE_SERVICE}
       args:
         GO_MAIN: "/src/cmd/web"
-        BUILD_ARGS: ""
       network: host
     container_name: frontend
     restart: always
@@ -71,6 +68,35 @@ services:
       - micro-net
     depends_on:
       - broker
+
+  rabbitMQ:
+    image: 'rabbitmq:3.9-alpine'
+    ports:
+      - "5672:5672"
+    container_name: rabbitMQ
+    restart: always
+    volumes:
+      - "rabbitmq-data:/var/lib/rabbitmq:rw"
+    networks:
+      - mq-net
+
+  postgres:
+    build:
+      context: ./db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - "auth:/var/lib/postgresql/data:rw"
+    healthcheck:
+      test: /postgres.sh
+      interval: "5s"
+    ports:
+      - ${DB_HOST}:${DB_PORT}
+    networks:
+      - db-net
 
   logger:
     build:
@@ -89,24 +115,6 @@ services:
       - broker
       - mongo
 
-  postgres:
-    build:
-      context: ./db
-    restart: always
-    environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASS}
-      POSTGRES_DB: ${DB_NAME}
-    volumes:
-      - "auth:/var/lib/postgresql/data"
-    healthcheck:
-      test: /postgres.sh
-      interval: "5s"
-    ports:
-      - ${DB_HOST}:${DB_PORT}
-    networks:
-      - db-net
-
   mongo:
     image: 'mongo:4.2.16-bionic'
     ports:
@@ -116,23 +124,19 @@ services:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
     volumes:
-      - "log:/data/db"
+      - "log:/data/db:rw"
     networks:
       - log-net
-
-
 
 
 volumes:
   auth:
   log:
-  rabbitmq:
+  rabbitmq-data:
 
 
 networks:
   db-net:
-    name: db-net
   micro-net:
-    name: micro-net
   log-net:
-    name: log-net
+  mq-net:

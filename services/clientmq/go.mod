@@ -1,4 +1,4 @@
-module rabbitMQ
+module clientmq
 
 go 1.18
 
