@@ -37,6 +37,22 @@ services:
     depends_on:
       - broker
 
+  rabbitMQ:
+    image: 'rabbitmq:3.9-alpine'
+    ports:
+      - "5672:5672"
+    build:
+      context: ./services/rabbitMQ
+      dockerfile: ${DOCKERFILE_SERVICE}
+      args:
+        GO_MAIN: "/src"
+        BUILD_ARGS: ""
+    container_name: rabbitMQ
+    restart: always
+
+    volumes:
+      - "rabbitmq:/var/lib/rabbitmq/"
+
   front-end:
     build:
       context: ./services/front-end
@@ -104,9 +120,13 @@ services:
     networks:
       - log-net
 
+
+
+
 volumes:
   auth:
   log:
+  rabbitmq:
 
 
 networks:
